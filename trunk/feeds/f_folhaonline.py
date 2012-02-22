@@ -12,6 +12,8 @@ class Feed(BaseFeed):
                         textdata = re.sub(r'\(.+\)\W?','',textdata) ### Remove stuff inside parenthesis
                         textdata = textdata.replace('\n','') ### Remove newlines inside the code
 			textdata = textdata.replace('\t','')
+			textdata = textdata.replace('&quot;','\"')
+
 
 			item.append(textdata.strip())
 			
