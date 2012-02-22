@@ -7,7 +7,15 @@ class Feed(BaseFeed):
 		for entry in self.feedrawdata['entries']:
 			item = []
 			item.append(entry.title)
-			item.append(re.sub(r'&quot;','\"',re.sub(r'\n','',re.sub(r'\.\.\..?$','',re.sub(r'</?.+>','', entry.description)))).strip())
+
+                        textdata = re.sub(r'\n','',re.sub(r'\.\.\..?$','',re.sub(r'</?.+>','', entry.description)))
+                        textdata = re.sub(r'\(.+\)\W?','',textdata) ### Remove stuff inside parenthesis
+                        textdata = textdata.replace('\n','') ### Remove newlines inside the code
+                        textdata = textdata.replace('\t','')
+
+                        item.append(textdata.strip())
+
+
 			
 			self.entries.append(item)
 
