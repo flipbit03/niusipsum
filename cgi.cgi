@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-__VERSION = "0.1"
+__VERSION = "1.0"
 
-print "content-type: text-plain; content-charset=utf-8\n"
+print "content-type: text/plain; charset=utf-8\n"
 
 ## Issue Banner
 print 'NIUSipsuM v%s' % (__VERSION)
@@ -17,6 +17,7 @@ del subpaths
 
 # Additional modules
 import random
+from niusipsum import NiusIpsum
 
 def r(n):
 	return int(random.random()*n)
@@ -40,26 +41,10 @@ for source in datasources:
 		for line in data.split('.'):
 			mixer.append(line.strip())
 
-print 'Source: %d lines of juicy news' % (len(mixer))
-print ''
+print "Gerando poema....\n"
 
-howmanylines = max(20,r(40))
-howmanylines = min(howmanylines, len(mixer))
+b = NiusIpsum(mixer, sectlinecount=4, sectcount=6)
+b.process()
 
-print 'Will generate %d lines of newsy poetry...' % (howmanylines)
-
-
-poem = []
-for i in range(howmanylines):
-	line = mixer[r(len(mixer))].strip()
-	if line:
-		poem.append(line)
-
-text = '.\n'.join(poem)
-
-print "\n---- LOUSY POETRY BEGIN ----\n"
-
-print text.encode('utf-8')
-
-print "\n---- LOUSY POETRY EOF ----"
+print b.poem().encode('utf-8')
 
