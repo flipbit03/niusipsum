@@ -4,8 +4,6 @@ import re
 import random
 import sqlite3
 
-data = open('sampledata/mixer.data.txt','rb').readlines()
-
 class NiusIpsum:
 # --------------- constructor
 
@@ -13,7 +11,10 @@ class NiusIpsum:
         # store outside params
         self.data = []
         for line in data:
-            self.data.append(line.decode(datacodec))
+            if isinstance(line, unicode):
+                self.data.append(line)
+            elif isinstance(line, str):
+	            self.data.append(line.decode(datacodec))
         self.sectcount = sectcount
         self.sectlinecount = sectlinecount
         self.wordsperline = wordsperline
@@ -48,9 +49,7 @@ class NiusIpsum:
         if not self.isinit:
             raise Exception("NiusIpsum process(): isinit = False!")
         else:
-            print "<NiusIpsum() Processing>"
             for line in self.data:
-                print "#",
                 sectionizedstring = self.sectionize(line, self.wordsperline)
                 for ss in sectionizedstring:
                     rhyme = ss[-2:].lower()
@@ -60,11 +59,9 @@ class NiusIpsum:
                         self.rhymepool[rhyme].append( (ss, self.sscore(ss)) )
                     else:
                         self.rhymepool[rhyme].append( (ss, self.sscore(ss)) )
-                    print ".",
-            print ''
 
     def sectionize(self, t, wc=4):
-        regexp = r'(?=(\b%s\w\w\w+))' % (r'\w+\s+'*(wc-1)) #notice the last word is at LEAST 3 chars \w\w\w+
+        regexp = r'(?=(\b%s\w\w\w\w+))' % (r'\w+\s+'*(wc-1)) #notice the last word is at LEAST 4 chars \w\w\w\w+
         return re.findall(regexp, t, re.UNICODE)
 
     def sscore(self, t, wlen=3):
@@ -180,15 +177,3 @@ class NiusIpsum:
 				out.append(self.popnr(self.rhymepool[line])[0][0])
 
 		return '\n'.join(out)
-
-	
-
-
-
-
-
-
-b = NiusIpsum(data, sectlinecount=5)
-b.process()
-
-print b.poem()
