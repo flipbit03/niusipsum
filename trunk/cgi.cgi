@@ -5,7 +5,7 @@ __VERSION = "1.0"
 print "content-type: text/plain; charset=utf-8\n"
 
 ## Issue Banner
-print 'NIUSipsuM v%s' % (__VERSION)
+print 'NIUSipsuM v%s by Cadu <cadu.coelho at gmail.com>' % (__VERSION)
 print '------------------------'
 print ''
 
@@ -43,7 +43,7 @@ for source in datasources:
 
 print "Gerando poema....\n"
 
-b = NiusIpsum(mixer, sectlinecount=4, sectcount=6)
+b = NiusIpsum(mixer, sectlinecount=4, sectcount=6, wordsperline=5)
 b.process()
 
 print b.poem().encode('utf-8')

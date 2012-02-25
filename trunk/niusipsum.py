@@ -61,7 +61,7 @@ class NiusIpsum:
                         self.rhymepool[rhyme].append( (ss, self.sscore(ss)) )
 
     def sectionize(self, t, wc=4):
-        regexp = r'(?=(\b%s\w\w\w\w+))' % (r'\w+\s+'*(wc-1)) #notice the last word is at LEAST 4 chars \w\w\w\w+
+        regexp = r'(?=(\b%s\w\w\w\w\w+))' % (r'\w+\s+'*(wc-1)) #notice the last word is at LEAST 5 chars \w\w\w\w\w+
         return re.findall(regexp, t, re.UNICODE)
 
     def sscore(self, t, wlen=3):
@@ -144,17 +144,22 @@ class NiusIpsum:
 		except:
 			raise Exception("NiusIpsum generatepoemscript(): adjdivers > len(scorelist)")
 
+		print "Debug:POEM[",
 		for section in range(self.sectcount):
+			print "sec/",
 			# Add rhymes
 			for rhymes in range(rps):
+				print "rhyme ",
 				thescript += self._elm_rhyme(elements[:])
 
 			# Add single sentences, filling the section
 			for sentences in range(sss):
+				print "single ",
 				thescript += self._elm_sentence(elements[:])
 
 			# Add blank space, meaning section separator
 			thescript.append('')
+		print "]\n"
 			
 		return thescript
 
