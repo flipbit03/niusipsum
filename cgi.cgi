@@ -38,8 +38,7 @@ mixer = []
 for source in datasources:
 	for entry in source.entries:
 		title, data = entry
-		for line in data.split('.'):
-			mixer.append(line.strip())
+		mixer.append(data.strip())
 
 print "Gerando poema....\n"
 
