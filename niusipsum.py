@@ -61,6 +61,7 @@ class NiusIpsum:
                     else:
                         self.rhymepool[rhyme].append( (ss, self.sscore(ss)) )
                     print ".",
+            print ''
 
     def sectionize(self, t, wc=4):
         regexp = r'(?=(\b%s\w\w\w+))' % (r'\w+\s+'*(wc-1)) #notice the last word is at LEAST 3 chars \w\w\w+
@@ -86,13 +87,44 @@ class NiusIpsum:
         return score
 
 # --------------- poem generation process
-    
-    def poem(self,a=10):
-		totalscores = [ (x,y,g) for x in self.rhymepool.keys() for y in [sum([z[1] for z in self.rhymepool[x]])] for g in [len(self.rhymepool[x])] ]
-		totalscores_sorted = sorted(totalscores, key = lambda sumscore: sumscore[1])[::-1]	# Sort by x[1] which is SCORE, and invert for DESCENDING with [::-1]
-		return totalscores_sorted
 
-	
+	# --------------- poem elements
+
+    def _elm_rhyme(self, elements):
+		out = []
+
+		a, b = self.popnr(elements,2)
+
+		# generate basic element 
+		belem = []
+		if (self.roll(2)-1): # either A,B or B,A
+			belem.append(a)
+			belem.append(b)
+		else:
+			belem.append(b)
+			belem.append(a)
+
+		out += belem
+
+		# generate second part, inverted or not
+		if (self.roll(2)-1): 
+			out += belem
+		else:
+			out += belem[::-1]
+
+		return out
+
+    def _elm_sentence(self, elements, howmany=1):
+		out = []
+
+		for i in range(howmany):
+			a = self.popnr(elements,1)
+			out += a
+
+		return out
+
+	# --------------- poem generation logic
+
     def generatepoemscript(self, sortedscorelist):
 		# script
 		thescript = []
@@ -116,24 +148,47 @@ class NiusIpsum:
 			raise Exception("NiusIpsum generatepoemscript(): adjdivers > len(scorelist)")
 
 		for section in range(self.sectcount):
-			#SECTION
-			pass
+			# Add rhymes
+			for rhymes in range(rps):
+				thescript += self._elm_rhyme(elements[:])
 
-		return elements
+			# Add single sentences, filling the section
+			for sentences in range(sss):
+				thescript += self._elm_sentence(elements[:])
+
+			# Add blank space, meaning section separator
+			thescript.append('')
+			
+		return thescript
+
+
+    def poem(self):
+		out = []
+
+		# Get a list containting | x->rhymekey name | y->total score | z->amount of sentences
+		totalscores = [ (x,y,g) for x in self.rhymepool.keys() for y in [sum([z[1] for z in self.rhymepool[x]])] for g in [len(self.rhymepool[x])] ]
+		# Sort by x[1] which is SCORE, and invert for DESCENDING with [::-1]
+		totalscores_sorted = sorted(totalscores, key = lambda sumscore: sumscore[1])[::-1]	
+		
+		# With the total sorted scores, generate the poem script.
+		poemscript = self.generatepoemscript(totalscores_sorted)
+
+		for line in poemscript:
+			if not line:
+				out.append(' ') # Append blank link when asked to, with a false-evaluated string ''
+			else:
+				out.append(self.popnr(self.rhymepool[line])[0][0])
+
+		return '\n'.join(out)
+
+	
 
 
 
 
 
 
-
-
-
-b = NiusIpsum(data)
+b = NiusIpsum(data, sectlinecount=5)
 b.process()
 
-z = b.poem()
-
-exi = b.generatepoemscript(z)
-
-print 'exi --> ' + repr(exi)
+print b.poem()
