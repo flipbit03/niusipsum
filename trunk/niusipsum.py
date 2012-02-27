@@ -2,23 +2,25 @@
 # -*- coding: cp1252 -*-
 import re
 import random
-import sqlite3
 
 class NiusIpsum:
 # --------------- constructor
-
-    def __init__(self, data, datacodec='utf-8', sectcount=4, sectlinecount=4, wordsperline=5, diversity=4):
+    def __init__(self, data, datacodec='utf-8', sectcount=4, sectlinecount=4, wordsperline=5, diversity=4, debug=False):
         # store outside params
         self.data = []
         for line in data:
             if isinstance(line, unicode):
                 self.data.append(line)
             elif isinstance(line, str):
-	            self.data.append(line.decode(datacodec))
+                self.data.append(line.decode(datacodec))
+
         self.sectcount = sectcount
         self.sectlinecount = sectlinecount
         self.wordsperline = wordsperline
         self.diversity = max(2, diversity) # affects how many rhyme components are used
+
+		# debug?
+        self.debug = debug
 
         # we can now work
         self.isinit = True
@@ -30,18 +32,18 @@ class NiusIpsum:
 # --------------- randomization support
 
     def roll(self, sides, minimum=1):
-		return max(minimum, int(random.random()*sides + 1) )
+        return max(minimum, int(random.random()*sides + 1) )
 
     def popnr(self, sourcelist, howmany=1):
-		out = []
-		src = sourcelist
-		if howmany > len(sourcelist):
-			raise Exception("NiusIpsum popnr(): HowMany > len(sourcelist) ???")
-		else:
-			for i in range(howmany):
-				popped = src.pop(self.roll(len(src),minimum=0)-1)
-				out.append(popped)
-		return out
+        out = []
+        src = sourcelist
+        if howmany > len(sourcelist):
+            raise Exception("NiusIpsum popnr(): HowMany > len(sourcelist) ???")
+        else:
+            for i in range(howmany):
+                popped = src.pop(self.roll(len(src),minimum=0)-1)
+                out.append(popped)
+        return out
 
 # --------------- text munging functions
 
@@ -85,116 +87,108 @@ class NiusIpsum:
 
 # --------------- poem generation process
 
-	# --------------- poem elements
+        # --------------- poem elements
 
     def _elm_rhyme(self, elements):
-		'''	# generate basic element 
-		belem = []
-		if (self.roll(2)-1): # either A,B or B,A
-			belem.append(a)
-			belem.append(b)
-		else:
-			belem.append(b)
-			belem.append(a)
+        belem = []
 
-		out += belem
+        out = []
 
-		# generate second part, inverted or not
-		if (self.roll(2)-1): 
-			out += belem
-		else:
-			out += belem[::-1]'''
+        a, b = self.popnr(elements,2)
 
-		belem = []
+        if (self.roll(2)-1): # either A,B or B,A
+            belem.append(a)
+            belem.append(a)
+            belem.append(b)
+            belem.append(b)
 
-		out = []
+        else:
+            belem.append(b)
+            belem.append(b)
+            belem.append(a)
+            belem.append(a)
 
-		a, b = self.popnr(elements,2)
+        out += belem
 
-		if (self.roll(2)-1): # either A,B or B,A
-			belem.append(a)
-			belem.append(a)
-			belem.append(b)
-			belem.append(b)
-
-		else:
-			belem.append(b)
-			belem.append(b)
-			belem.append(a)
-			belem.append(a)
-
-		out += belem
-
-		return out
+        return out
 
     def _elm_sentence(self, elements, howmany=1):
-		out = []
+        out = []
 
-		for i in range(howmany):
-			a = self.popnr(elements,1)
-			out += a
+        for i in range(howmany):
+            a = self.popnr(elements,1)
+            out += a
 
-		return out
+        return out
 
-	# --------------- poem generation logic
+        # --------------- poem generation logic
 
     def generatepoemscript(self, sortedscorelist):
-		# script
-		thescript = []
+        # script
+        thescript = []
 
-		# how many rhymes per section
-		rps = self.sectlinecount // 4
+        # how many rhymes per section
+        rps = self.sectlinecount // 4
 
-		# how many single sentences per section
-		sss = self.sectlinecount % 4
-		
-		# how many rhymes (read, 4 intertwined sentences) do we need?
-		totalrc = (rps) * self.sectcount
+        # how many single sentences per section
+        sss = self.sectlinecount % 4
 
-		#adjust diversity
-		adjdivers = min(self.roll(self.diversity, minimum=2), len(sortedscorelist))
+        # how many rhymes (read, 4 intertwined sentences) do we need?
+        totalrc = (rps) * self.sectcount
 
-		#get elements using adjusted diversity as a cutoff
-		try:
-			elements = [x[0] for x in sortedscorelist[0:adjdivers]]
-		except:
-			raise Exception("NiusIpsum generatepoemscript(): adjdivers > len(scorelist)")
+        #adjust diversity
+        adjdivers = min(self.roll(self.diversity, minimum=2), len(sortedscorelist))
 
-		print "Debug:POEM[",
-		for section in range(self.sectcount):
-			print "sec/",
-			# Add rhymes
-			for rhymes in range(rps):
-				print "rhyme ",
-				thescript += self._elm_rhyme(elements[:])
+        #get elements using adjusted diversity as a cutoff
+        try:
+            elements = [x[0] for x in sortedscorelist[0:adjdivers]]
+        except:
+            raise Exception("NiusIpsum generatepoemscript(): adjdivers > len(scorelist)")
 
-			# Add single sentences, filling the section
-			for sentences in range(sss):
-				print "single ",
-				thescript += self._elm_sentence(elements[:])
+        if self.debug:
+            print "Debug:POEM[",
+        for section in range(self.sectcount):
+            if self.debug:
+                print "sec/",
+            # Add rhymes
+            for rhymes in range(rps):
+                if self.debug:
+                    print "rhyme ",
+                thescript += self._elm_rhyme(elements[:])
 
-			# Add blank space, meaning section separator
-			thescript.append('')
-		print "]\n"
-			
-		return thescript
+            # Add single sentences, filling the section
+            for sentences in range(sss):
+                if self.debug:
+                    print "single ",
+                thescript += self._elm_sentence(elements[:])
+
+            # Add blank space, meaning section separator
+            thescript.append('')
+        if self.debug:
+            print "]\n"
+
+        return thescript
 
 
     def poem(self):
-		out = []
+        out = []
 
-		# Get a list containting | x->rhymekey name | y->total score | z->amount of sentences
-		totalscores = [ (x,y,g) for x in self.rhymepool.keys() for y in [sum([z[1] for z in self.rhymepool[x]])] for g in [len(self.rhymepool[x])] ]
-		# Sort by x[1] which is SCORE, and invert for DESCENDING with [::-1]
-		totalscores_sorted = sorted(totalscores, key = lambda sumscore: sumscore[1])[::-1]	
-		
-		# With the total sorted scores, generate the poem script.
-		poemscript = self.generatepoemscript(totalscores_sorted)
+        # Get a list containting | x->rhymekey name | y->total score | z->amount of sentences
+        totalscores = [ (x,y,g) for x in self.rhymepool.keys() for y in [sum([z[1] for z in self.rhymepool[x]])] for g in [len(self.rhymepool[x])] ]
+        # Sort by x[1] which is SCORE, and invert for DESCENDING with [::-1]
+        totalscores_sorted = sorted(totalscores, key = lambda sumscore: sumscore[1])[::-1]
 
-		for line in poemscript:
-			if not line:
-				out.append(' ') # Append blank link when asked to, with a false-evaluated string ''
-			else:
-				out.append(self.popnr(self.rhymepool[line])[0][0])
+        # With the total sorted scores, generate the poem script.
+        poemscript = self.generatepoemscript(totalscores_sorted)
 
-		return '\n'.join(out)
+        for line in poemscript:
+            if not line:
+                out.append(' ') # Append blank link when asked to, with a false-evaluated string ''
+            else:
+                if self.debug: 
+                    print "Len rhymepool[%s] = %d" % (line, len(self.rhymepool[line])),
+                out.append(self.popnr(self.rhymepool[line])[0][0])
+                if self.debug: 
+                    print " => %d" % (len(self.rhymepool[line]))
+
+        return '\n'.join(out)
