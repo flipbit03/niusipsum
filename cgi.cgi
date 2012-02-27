@@ -42,7 +42,7 @@ for source in datasources:
 
 print "Gerando poema....\n"
 
-b = NiusIpsum(mixer, sectlinecount=4, sectcount=6, wordsperline=5)
+b = NiusIpsum(mixer, sectlinecount=12, sectcount=4, wordsperline=3)
 b.process()
 
 print b.poem().encode('utf-8')
