@@ -61,7 +61,7 @@ class NiusIpsum:
                         self.rhymepool[rhyme].append( (ss, self.sscore(ss)) )
 
     def sectionize(self, t, wc=4):
-        regexp = r'(?=(\b%s\w\w\w\w\w+))' % (r'\w+\s+'*(wc-1)) #notice the last word is at LEAST 5 chars \w\w\w\w\w+
+        regexp = r'(?=(\b%s\w\w\w\w\w\w\w+))' % (r'\w+\s+'*(wc-1)) #notice the last word is at LEAST 7 chars \w\w\w\w\w+
         return re.findall(regexp, t, re.UNICODE)
 
     def sscore(self, t, wlen=3):
@@ -88,11 +88,7 @@ class NiusIpsum:
 	# --------------- poem elements
 
     def _elm_rhyme(self, elements):
-		out = []
-
-		a, b = self.popnr(elements,2)
-
-		# generate basic element 
+		'''	# generate basic element 
 		belem = []
 		if (self.roll(2)-1): # either A,B or B,A
 			belem.append(a)
@@ -107,7 +103,27 @@ class NiusIpsum:
 		if (self.roll(2)-1): 
 			out += belem
 		else:
-			out += belem[::-1]
+			out += belem[::-1]'''
+
+		belem = []
+
+		out = []
+
+		a, b = self.popnr(elements,2)
+
+		if (self.roll(2)-1): # either A,B or B,A
+			belem.append(a)
+			belem.append(a)
+			belem.append(b)
+			belem.append(b)
+
+		else:
+			belem.append(b)
+			belem.append(b)
+			belem.append(a)
+			belem.append(a)
+
+		out += belem
 
 		return out
 
