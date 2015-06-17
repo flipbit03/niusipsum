@@ -1,0 +1,1 @@
+This program will generate a text derived from the latest news so you can read it like some fancy news poetry.
